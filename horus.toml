@@ -1,0 +1,16 @@
+# Deployed alongside the binary. Values here override the defaults compiled
+# into config.rs; HORUS_* environment variables still override this file.
+
+listen = "0.0.0.0:5067"
+poll_interval_secs = 30
+history_len = 2880 # 30s x 2880 = 24h
+
+[runtime]
+# Rootless Podman exposes a Docker-compatible API here. Enable it with:
+#   systemctl --user enable --now podman.socket
+socket = "/run/user/1000/podman/podman.sock"
+
+# Health-check targets, once the poller does HTTP checks.
+# [services.memos]
+# url = "http://localhost:5230/healthz"
+# timeout_secs = 5

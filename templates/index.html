@@ -29,7 +29,7 @@
             <tr>
                 <td>{{ c.name }}</td>
                 <td>{{ c.image }}</td>
-                <td class="{% if c.running %}running{% else %}stopped{% endif %}">{{ c.state }}</td>
+                <td class="{% if c.state.is_running() %}running{% else %}stopped{% endif %}">{{ c.state }}</td>
                 <td>{{ c.status }}</td>
             </tr>
         {% else %}
