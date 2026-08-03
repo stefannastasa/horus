@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 HOST=stefan-rpi.tail280288.ts.net
 TARGET=aarch64-unknown-linux-gnu
