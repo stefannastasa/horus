@@ -2,12 +2,21 @@
 set -euo pipefail
 
 echo "fmt..."
-cargo fmt --all -- --check
+# Format, then re-stage only the .rs files that were already staged, so anything
+# deliberately left unstaged stays that way.
+staged=()
+while IFS= read -r file; do
+    staged+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.rs')
+
+cargo fmt --all
+
+if [[ ${#staged[@]} -gt 0 ]]; then
+    git add -- "${staged[@]}"
+fi
 
 echo "clippy..."
 cargo clippy --all-targets -- -D warnings -A dead_code
 
 echo "test..."
 cargo test --quiet
-
-chmod +x .githooks/pre-commit

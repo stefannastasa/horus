@@ -6,38 +6,119 @@
     <meta http-equiv="refresh" content="10">
     <title>horus</title>
     <style>
+        :root {
+            --up: #2e7d32;
+            --down: #c62828;
+            --rule: #8883;
+            --tip-bg: #222;
+            --tip-fg: #f5f5f5;
+        }
+
         body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-               margin: 2rem auto; max-width: 60rem; padding: 0 1rem; }
+               margin: 2rem auto; max-width: 90rem; padding: 0 1rem; }
         h1 { font-size: 1.2rem; }
+
         table { border-collapse: collapse; width: 100%; }
-        th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #8883; }
+        th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--rule); }
         th { font-weight: 600; opacity: 0.6; font-size: 0.8rem; text-transform: uppercase; }
-        .running { color: #2e7d32; }
-        .stopped { color: #c62828; }
+
+        /* Long image references shouldn't crowd out the history strip. */
+        td.image { max-width: 22rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .running { color: var(--up); }
+        .stopped { color: var(--down); }
         footer { margin-top: 2rem; opacity: 0.5; font-size: 0.8rem; }
+
+        /* ---- history strip ------------------------------------------------ */
+
+        td.history { width: 1%; }
+
+        .strip {
+            display: flex;
+            justify-content: flex-end;   /* partial history hugs the right edge */
+            align-items: stretch;
+            gap: {{ bar_gap }}px;
+            width: {{ strip_width }}px;
+            height: 18px;
+            background: var(--rule);
+        }
+
+        .bar {
+            position: relative;          /* anchor for the tooltip */
+            width: {{ bar_width }}px;
+            flex: none;
+        }
+        .bar.up { background: var(--up); }
+        .bar.down { background: var(--down); }
+
+        .bar:hover {
+            outline: 1px solid currentColor;
+            outline-offset: 1px;
+            filter: brightness(1.4);
+        }
+
+        /* Tooltip: a pseudo-element on the bar, revealed on hover. No JS, and
+           it appears instantly rather than after the browser's title delay. */
+        .bar::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            background: var(--tip-bg);
+            color: var(--tip-fg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            opacity: 0;
+            pointer-events: none;        /* never swallow the hover itself */
+            transition: opacity 80ms ease-out;
+            z-index: 10;
+        }
+        .bar:hover::after { opacity: 1; }
+
+        /* Rows would otherwise clip a tooltip escaping upward. */
+        tbody tr { position: relative; }
+
+        @media (prefers-color-scheme: dark) {
+            :root { --up: #66bb6a; --down: #ef5350; --tip-bg: #eee; --tip-fg: #111; }
+            body { background: #111; color: #ddd; }
+        }
     </style>
 </head>
 <body>
-    <h1>horus &mdash; {{ containers.len() }} containers</h1>
+    <h1>horus &mdash; {{ rows.len() }} containers</h1>
 
     <table>
         <thead>
-            <tr><th>name</th><th>image</th><th>state</th><th>status</th></tr>
+            <tr>
+                <th>name</th><th>image</th><th>state</th><th>status</th><th>history</th>
+            </tr>
         </thead>
         <tbody>
-        {% for c in containers %}
+        {% for r in rows %}
             <tr>
-                <td>{{ c.name }}</td>
-                <td>{{ c.image }}</td>
-                <td class="{% if c.state.is_running() %}running{% else %}stopped{% endif %}">{{ c.state }}</td>
-                <td>{{ c.status }}</td>
+                <td>{{ r.container.name }}</td>
+                <td class="image" title="{{ r.container.image }}">{{ r.container.image }}</td>
+                <td class="{% if r.container.state.is_running() %}running{% else %}stopped{% endif %}">{{ r.container.state }}</td>
+                <td>{{ r.container.status }}</td>
+                <td class="history">
+                    <div class="strip" role="img"
+                         aria-label="recent uptime for {{ r.container.name }}, oldest to newest">
+                    {% for bar in r.history %}
+                        <div class="bar {% if bar.up %}up{% else %}down{% endif %}"
+                             data-label="{{ bar.label }}"></div>
+                    {% endfor %}
+                    </div>
+                </td>
             </tr>
         {% else %}
-            <tr><td colspan="4">no containers</td></tr>
+            <tr><td colspan="5">no containers</td></tr>
         {% endfor %}
         </tbody>
     </table>
 
-    <footer>auto-refreshes every 10s</footer>
+    <footer>auto-refreshes every 10s &middot; hover a bar for its timestamp</footer>
 </body>
 </html>

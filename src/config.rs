@@ -100,6 +100,9 @@ fn default_timeout_secs() -> u64 {
 }
 
 #[cfg(test)]
+// `Jail::expect_with` dictates the closure's return type, and `figment::Error`
+// is 208 bytes — not something we can box from here.
+#[allow(clippy::result_large_err)]
 mod tests {
     use super::*;
 

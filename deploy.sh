@@ -12,6 +12,7 @@ BUILD_OUTPUT_DIR="/tmp/horus"
 PROJECT_PATH="/Users/tefannastasa/workplace/horus"
 REMOTE_DIR="/tmp/horus"
 CONFIG="horus.toml"
+TEST_CONFIG="horus-test.toml"
 
 case "$MODE" in
     dev | prod) ;;
@@ -64,13 +65,13 @@ case "$MODE" in
 dev)
     r mkdir -p "$REMOTE_DIR"
     scp -o ControlPath="$CTL" "$TARGET_LOCATION" "$HOST:$REMOTE_DIR/$BIN" >/dev/null
-    scp -o ControlPath="$CTL" "$CONFIG" "$HOST:$REMOTE_DIR/$CONFIG" >/dev/null
+    scp -o ControlPath="$CTL" "$TEST_CONFIG" "$HOST:$REMOTE_DIR/$TEST_CONFIG" >/dev/null
     echo "Artifact transferred to remote path: $REMOTE_DIR/$BIN"
 
     r chmod 744 "$REMOTE_DIR/$BIN"
     # Foreground, so logs stream back here and Ctrl-C stops it.
     ssh -o ControlPath="$CTL" "$HOST" \
-        "RUST_LOG=debug $REMOTE_DIR/$BIN --config $REMOTE_DIR/$CONFIG"
+        "RUST_LOG=horus=debug,warn $REMOTE_DIR/$BIN --config $REMOTE_DIR/$TEST_CONFIG"
     ;;
 
 prod)

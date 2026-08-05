@@ -5,14 +5,22 @@ use std::sync::Arc;
 
 use axum::{Router, routing::get};
 
-use crate::runtime::ContainerRuntime;
+use crate::{runtime::ContainerRuntime, store::Store};
+
+/// Shared by every handler. Both fields are `Arc`, so cloning is a refcount
+/// bump — which is what axum does per request.
+#[derive(Clone)]
+pub struct AppState {
+    pub runtime: Arc<dyn ContainerRuntime>,
+    pub store: Arc<dyn Store>,
+}
 
 /// Builds the dashboard's routing table.
 ///
-/// Takes the runtime as a trait object so `main` decides the implementation and
-/// tests can pass a fake. Gains a `store` alongside it once the poller lands.
-pub fn router(runtime: Arc<dyn ContainerRuntime>) -> Router {
+/// Takes trait objects so `main` decides the implementations and tests can pass
+/// fakes.
+pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/", get(handlers::index))
-        .with_state(runtime)
+        .with_state(state)
 }
