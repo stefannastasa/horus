@@ -1,9 +1,3 @@
-//! The types horus reasons about, independent of any container runtime.
-//!
-//! Nothing in here should mention bollard, axum or a database. Adapters convert
-//! into these types at their boundary, so the rest of the codebase never deals
-//! with a particular runtime's idea of what a container is.
-
 use std::fmt;
 
 use time::OffsetDateTime;

@@ -7,8 +7,6 @@ use figment::{
 };
 use serde::{Deserialize, Serialize};
 
-/// Everything horus needs to start, assembled from defaults, a TOML file and the
-/// environment — in that order of increasing precedence.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -33,8 +31,6 @@ pub struct Config {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RuntimeConfig {
-    /// Unix socket of the container runtime. `None` falls back to bollard's
-    /// defaults, which honour `DOCKER_HOST`.
     #[serde(default)]
     pub socket: Option<String>,
 }

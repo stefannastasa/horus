@@ -2,8 +2,8 @@
 # into config.rs; HORUS_* environment variables still override this file.
 
 listen = "0.0.0.0:5067"
-poll_interval_secs = 30
-history_len = 2880 # 30s x 2880 = 24h
+poll_interval_secs = 600
+history_len = 1008 # 600s (or 10 mins) - 7 days * 24 hrs * 60 mins / 10 <- collect every 10 mins, hold a week worth of data
 
 [runtime]
 # Rootless Podman exposes a Docker-compatible API here. Enable it with:
